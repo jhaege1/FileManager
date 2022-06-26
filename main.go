@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -21,8 +20,9 @@ type folder interface {
 type portableDocumentFormat struct{}
 type image struct{}
 type executable struct{}
-type msi struct{}
-type zip struct{}
+type microsoftInstaller struct{}
+type compressedFile struct{}
+type videos struct{}
 
 func main() {
 	dir := "C:\\Users\\Jeroen\\Downloads\\"
@@ -30,14 +30,16 @@ func main() {
 	pdf := portableDocumentFormat{}
 	img := image{}
 	exe := executable{}
-	msi := msi{}
-	zip := zip{}
+	msi := microsoftInstaller{}
+	zip := compressedFile{}
+	vid := videos{}
 
 	createDirectories(pdf)
 	createDirectories(img)
 	createDirectories(exe)
 	createDirectories(msi)
 	createDirectories(zip)
+	createDirectories(vid)
 
 	currentFileLocations := returnFileLocations(dir)
 
@@ -48,6 +50,7 @@ func main() {
 		moveFiles(exe, currentFileLocation, fileName)
 		moveFiles(msi, currentFileLocation, fileName)
 		moveFiles(zip, currentFileLocation, fileName)
+		moveFiles(vid, currentFileLocation, fileName)
 	}
 }
 
@@ -63,12 +66,16 @@ func (exe executable) getLocation() string {
 	return "C:\\Users\\Jeroen\\Downloads\\Executables\\"
 }
 
-func (msi msi) getLocation() string {
+func (msi microsoftInstaller) getLocation() string {
 	return "C:\\Users\\Jeroen\\Downloads\\Executables\\"
 }
 
-func (zip zip) getLocation() string {
+func (zip compressedFile) getLocation() string {
 	return "C:\\Users\\Jeroen\\Downloads\\Zipped files\\"
+}
+
+func (vid videos) getLocation() string {
+	return "C:\\Users\\Jeroen\\Downloads\\Videos\\"
 }
 
 func (pdf portableDocumentFormat) getExtension() string {
@@ -83,26 +90,30 @@ func (exe executable) getExtension() string {
 	return ".exe"
 }
 
-func (msi msi) getExtension() string {
+func (msi microsoftInstaller) getExtension() string {
 	return ".msi"
 }
 
-func (zip zip) getExtension() string {
+func (zip compressedFile) getExtension() string {
 	return ".zip"
+}
+
+func (vid videos) getExtension() string {
+	return ".mp4"
 }
 
 func returnFileLocations(dir string) []string {
 	fileLocations := []string{}
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		fmt.Println("Error:", err)
+		log.Fatal(err)
 	}
 
 	for _, file := range files {
 		fileName := file.Name()
 		filePath, err := filepath.Abs(dir + fileName)
 		if err != nil {
-			fmt.Println("Error:", err)
+			log.Fatal(err)
 		}
 		fileLocations = append(fileLocations, filePath)
 	}
@@ -115,7 +126,7 @@ func moveFiles(d doc, currentFileLocation string, fileName string) {
 		docDir := d.getLocation()
 		err := os.Rename(currentFileLocation, docDir+fileName)
 		if err != nil {
-			fmt.Println("Error:", err)
+			log.Fatal(err)
 		}
 	}
 }
