@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,6 +12,10 @@ import (
 type doc interface {
 	getLocation() string
 	getExtension() string
+}
+
+type folder interface {
+	getLocation() string
 }
 
 type portableDocumentFormat struct{}
@@ -27,6 +32,12 @@ func main() {
 	exe := executable{}
 	msi := msi{}
 	zip := zip{}
+
+	createDirectories(pdf)
+	createDirectories(img)
+	createDirectories(exe)
+	createDirectories(msi)
+	createDirectories(zip)
 
 	currentFileLocations := returnFileLocations(dir)
 
@@ -106,5 +117,12 @@ func moveFiles(d doc, currentFileLocation string, fileName string) {
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
+	}
+}
+
+func createDirectories(f folder) {
+	err := os.MkdirAll(f.getLocation(), 0750)
+	if err != nil && !os.IsExist(err) {
+		log.Fatal(err)
 	}
 }
